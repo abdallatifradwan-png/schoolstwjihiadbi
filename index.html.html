@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تحليل مؤشرات الإنجاز - الفرع الأدبي - قلقيلية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Tajawal', sans-serif; 
+            background-color: #f8fafc; 
+            scroll-behavior: smooth;
+        }
+
+        /* تأثير الزجاج الخلفي */
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); 
+        }
+
+        /* رسوم متحركة لظهور البطاقة */
+        .card-animate { 
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        }
+
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(40px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* تخصيص شريط التمرير باللون الخمري */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #be123c; border-radius: 10px; }
+
+        /* تأثير نمو شريط التقدم */
+        .progress-bar { 
+            transition: width 1.5s ease-in-out; 
+        }
+
+        /* تنسيقات الطباعة */
+        @media print { 
+            .no-print { display: none !important; } 
+            .print-only { display: block !important; } 
+            body { background: white; } 
+            .card-animate { animation: none; transform: none; }
+            main { padding: 0 !important; }
+            .school-card-container { border: none !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="custom-scrollbar antialiased text-slate-900">
+
+    <div id="app" class="min-h-screen flex flex-col">
+        <header class="bg-rose-950 text-white shadow-2xl sticky top-0 z-50 no-print">
+            <div class="max-w-7xl mx-auto px-4 py-4 lg:py-6">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="flex items-center gap-4 text-center md:text-right">
+                        <div class="bg-rose-500/20 p-3 rounded-2xl border border-rose-400/30 hidden sm:block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-rose-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-xl md:text-2xl font-black tracking-tight">نظام تحليل مؤشرات الإنجاز</h1>
+                            <p class="text-rose-300 text-xs md:text-sm font-medium">مديرية قلقيلية | قسم المتابعة الميدانية | الفرع الأدبي</p>
+                            <p class="text-rose-300 text-xs md:text-sm font-medium"> أ. عبداللطيف رضوان </p>
+                        </div>
+                    </div>
+                    
+                    <div class="relative w-full md:w-[450px]">
+                        <input type="text" id="search-input" autoComplete="off"
+                            placeholder="ابحث عن اسم المدرسة..." 
+                            class="w-full bg-rose-900/40 border border-rose-700/50 text-white placeholder-rose-400 focus:ring-4 focus:ring-rose-500/20 focus:border-rose-400 rounded-2xl py-3 md:py-4 pr-12 pl-4 transition-all font-bold outline-none shadow-inner text-sm md:text-base">
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-rose-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <div id="suggestions" class="absolute w-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50 hidden max-h-80 overflow-y-auto custom-scrollbar text-slate-800"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-4 md:p-8 flex-grow w-full">
+            
+            <div id="welcome-msg" class="flex flex-col items-center justify-center py-16 md:py-24 text-center no-print">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-rose-200 blur-3xl rounded-full opacity-30 animate-pulse"></div>
+                    <div class="relative w-32 h-32 md:w-40 md:h-40 bg-white rounded-[2.5rem] md:rounded-[3rem] flex items-center justify-center mb-8 border border-slate-100 shadow-2xl animate-bounce">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 md:w-20 md:h-20 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                    </div>
+                </div>
+                <h2 class="text-2xl md:text-4xl font-black text-slate-800 mb-4">مرحباً بك في لوحة المؤشرات (الفرع الأدبي)</h2>
+                <p class="text-slate-500 font-bold max-w-lg leading-relaxed px-4">يرجى اختيار اسم المدرسة من شريط البحث بالأعلى لعرض التقرير التفصيلي لنسب إنجاز مباحث الفرع الأدبي ومقارنتها بمعدل المديرية العام.</p>
+            </div>
+
+            <div id="school-card" class="hidden"></div>
+        </main>
+
+        <footer class="bg-white border-t border-slate-200 py-8 no-print mt-auto">
+            <div class="text-center">
+                <div class="flex justify-center gap-4 mb-4">
+                    <span class="h-2 w-2 rounded-full bg-rose-600"></span>
+                    <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                    <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+                </div>
+                <p class="text-slate-500 text-[10px] md:text-xs font-black tracking-widest uppercase px-4">جميع الحقوق محفوظة © 2026  -  أ. عبداللطيف رضوان</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ترتيب البيانات في المصفوفات:
+        // [اللغة العربية, اللغة الانجليزية, الرياضيات, الجغرافيا, الثقافة العلمية, التكنولوجيا, التاريخ, التربية الاسلامية]
+        
+        const schoolsData = [
+            { name: "الرماضين الثانوية المختلطة", pages: [107, 82, 80, 83, 81, 103, 117, 174], rates: ["91%", "91%", "80%", "92%", "95%", "84%", "90%", "88%"] },
+            { name: "الصمود الثانوية المختلطة", pages: [76, 88, 90, 95, 101, 89, 97, 145], rates: ["64%", "82%", "83%", "100%", "112%", "81%", "75%", "74%"] },
+            { name: "الفندق الثانوية المختلطة", pages: [91, 85, 53, 70, 91, 85, 80, 134], rates: ["77%", "82%", "59%", "82%", "74%", "85%", "62%", "68%"] },
+            { name: "النبي الياس الثانوية المختلطة", pages: [99, 84, 87, 70, 105, 104, 155, 151], rates: ["84%", "82%", "97%", "86%", "85%", "81%", "77%", "86%"] },
+            { name: "اماتين الثانوية المختلطة", pages: [98, 78, 65, 62, 94, 100, 139, 155], rates: ["83%", "78%", "72%", "73%", "81%", "81%", "77%", "79%"] },
+            { name: "باقة الحطب الثانوية المختلطة", pages: [89, 77, 76, 71, 101, 90, 62, 85], rates: ["75%", "77%", "84%", "84%", "82%", "81%", "48%", "43%"] },
+            { name: "بنات الشيماء الثانوية", pages: [87, 81, 65, 66, 100, 81, 70, 146], rates: ["74%", "82%", "72%", "78%", "81%", "81%", "77%", "86%"] },
+            { name: "بنات العمرية الثانوية", pages: [106, 87, 100, 66, 105, 83, 97, 143], rates: ["90%", "82%", "111%", "78%", "85%", "81%", "75%", "73%"] },
+            { name: "بنات اماتين الثانوية", pages: [100, 84, 80, 73, 104, 92, 135, 153], rates: ["85%", "82%", "89%", "86%", "85%", "81%", "104%", "78%"] },
+            { name: "بنات باقة الحطب الثانوية", pages: [103, 90, 71, 72, 106, 84, 103, 144], rates: ["87%", "82%", "79%", "85%", "86%", "81%", "79%", "73%"] },
+            { name: "بنات جيت الثانوية", pages: [107, 86, 90, 74, 108, 85, 89, 182], rates: ["91%", "82%", "100%", "87%", "88%", "81%", "68%", "92%"] },
+            { name: "بنات جينصافوط الثانوية", pages: [99, 84, 80, 67, 106, 88, 110, 154], rates: ["84%", "82%", "89%", "79%", "86%", "81%", "85%", "78%"] },
+            { name: "بنات جيوس الثانوية", pages: [102, 81, 101, 46, 99, 89, 126, 146], rates: ["86%", "82%", "112%", "54%", "80%", "81%", "97%", "74%"] },
+            { name: "بنات حبلة الثانوية", pages: [100, 88, 91, 63, 106, 88, 113, 145], rates: ["85%", "82%", "101%", "74%", "86%", "81%", "87%", "74%"] },
+            { name: "بنات حجة الثانوية", pages: [101, 84, 75, 81, 95, 84, 144, 154], rates: ["86%", "82%", "83%", "95%", "78%", "81%", "111%", "78%"] },
+            { name: "بنات راس عطية الثانوية", pages: [91, 85, 77, 67, 106, 84, 90, 137], rates: ["77%", "82%", "86%", "79%", "86%", "81%", "69%", "70%"] },
+            { name: "بنات سنيريا الثانوية", pages: [85, 84, 86, 66, 104, 88, 135, 135], rates: ["72%", "82%", "96%", "78%", "85%", "81%", "104%", "69%"] },
+            { name: "بنات عزون عتمة الثانوية", pages: [103, 86, 83, 62, 95, 90, 144, 160], rates: ["87%", "82%", "92%", "73%", "77%", "81%", "111%", "81%"] },
+            { name: "بنات فاطمة سرور الثانوية", pages: [102, 78, 78, 73, 95, 107, 131, 107], rates: ["86%", "82%", "87%", "86%", "77%", "93%", "101%", "54%"] },
+            { name: "بنات كفر قدوم الثانوية", pages: [101, 86, 65, 73, 100, 84, 137, 170], rates: ["86%", "82%", "72%", "86%", "81%", "81%", "105%", "86%"] },
+            { name: "بنات كفر ثلث الثانوية", pages: [92, 85, 91, 65, 90, 88, 116, 165], rates: ["78%", "82%", "101%", "76%", "73%", "81%", "89%", "84%"] },
+            { name: "جيت الثانوية المختلطة", pages: [97, 89, 80, 57, 80, 94, 92, 84], rates: ["82%", "82%", "89%", "67%", "72%", "82%", "71%", "43%"] },
+            { name: "ذكور السعدية الثانوية", pages: [92, 91, 56, 60, 109, 84, 84, 81], rates: ["78%", "82%", "62%", "71%", "89%", "81%", "65%", "41%"] },
+            { name: "ذكور حبلة الثانوية", pages: [106, 80, 92, 63, 104, 89, 84, 89], rates: ["90%", "82%", "102%", "74%", "85%", "81%", "65%", "45%"] },
+            { name: "ذكور راس عطية الثانوية", pages: [92, 83, 75, 63, 96, 83, 88, 80], rates: ["78%", "82%", "83%", "74%", "78%", "81%", "68%", "41%"] },
+            { name: "ذكور سنيريا الثانوية", pages: [84, 99, 46, 65, 94, 85, 157, 142], rates: ["71%", "82%", "51%", "76%", "76%", "81%", "121%", "72%"] },
+            { name: "ذكور عبد الرحيم عمر الثانوية", pages: [78, 89, 58, 52, 100, 93, 85, 120], rates: ["66%", "82%", "64%", "61%", "81%", "81%", "65%", "61%"] },
+            { name: "ذكور عزون الثانوية", pages: [85, 65, 64, 62, 93, 90, 70, 130], rates: ["72%", "82%", "71%", "73%", "76%", "81%", "54%", "66%"] },
+            { name: "ذكور كفر ثلث الثانوية", pages: [88, 80, 89, 66, 86, 75, 125, 148], rates: ["75%", "82%", "99%", "78%", "70%", "81%", "96%", "75%"] },
+            { name: "ذكور كفر قدوم الثانوية", pages: [95, 80, 51, 66, 95, 90, 86, 76], rates: ["81%", "82%", "57%", "78%", "77%", "81%", "66%", "39%"] },
+            { name: "ذكور مسقط الثانوية", pages: [105, 80, 84, 64, 91, 85, 88, 77], rates: ["89%", "82%", "93%", "75%", "74%", "81%", "68%", "39%"] },
+            { name: "سلمان الثانوية المختلطة", pages: [97, 81, 98, 66, 101, 104, 142, 149], rates: ["82%", "82%", "109%", "78%", "82%", "90%", "109%", "76%"] },
+            { name: "عزون - بيت امين الثانوية", pages: [98, 80, 77, 69, 92, 83, 84, 137], rates: ["83%", "82%", "86%", "81%", "75%", "81%", "65%", "70%"] },
+            { name: "فرعتا الثانوية المختلطة", pages: [101, 77, 80, 75, 126, 81, 97, 153], rates: ["86%", "82%", "89%", "88%", "102%", "85%", "75%", "78%"] },
+            { name: "فلامية الثانوية المختلطة", pages: [100, 87, 90, 78, 104, 86, 133, 252], rates: ["85%", "82%", "100%", "92%", "85%", "81%", "102%", "128%"] },
+            { name: "كفر لاقف الثانوية المختلطة", pages: [108, 76, 70, 68, 101, 88, 106, 135], rates: ["92%", "82%", "78%", "80%", "82%", "81%", "82%", "69%"] }
+        ];
+
+        // بيانات مباحث الفرع الأدبي ومعدل المديرية (من الصف الأصفر أسفل الجدول)
+        const subjectSpecs = [
+            { name: "اللغة العربية", prov: "82%", icon: "📖" }, 
+            { name: "اللغة الانجليزية", prov: "82%", icon: "🌐" },
+            { name: "الرياضيات", prov: "83%", icon: "📐" }, 
+            { name: "الجغرافيا", prov: "86%", icon: "🌍" },
+            { name: "الثقافة العلمية", prov: "80%", icon: "🧪" }, 
+            { name: "التكنولوجيا", prov: "81%", icon: "💻" }, 
+            { name: "التاريخ", prov: "77%", icon: "📜" }, 
+            { name: "التربية الاسلامية", prov: "86%", icon: "🕌" }
+        ];
+
+        const input = document.getElementById('search-input');
+        const suggestions = document.getElementById('suggestions');
+        const cardContainer = document.getElementById('school-card');
+        const welcome = document.getElementById('welcome-msg');
+
+        // التعامل مع مدخلات البحث
+        input.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            suggestions.innerHTML = '';
+            if (val.length < 1) { 
+                suggestions.classList.add('hidden'); 
+                return; 
+            }
+            
+            const matches = schoolsData.filter(s => s.name.includes(val));
+            if (matches.length > 0) {
+                suggestions.classList.remove('hidden');
+                matches.forEach(s => {
+                    const div = document.createElement('div');
+                    div.className = 'p-4 hover:bg-rose-50 cursor-pointer font-bold border-b border-slate-100 flex justify-between items-center transition-all duration-200';
+                    div.innerHTML = `<span>${s.name}</span> <span class="text-[10px] bg-rose-100 text-rose-700 px-2 py-1 rounded-md">الفرع الأدبي</span>`;
+                    div.onclick = () => { 
+                        showSchoolData(s); 
+                        suggestions.classList.add('hidden'); 
+                        input.value = ''; 
+                    };
+                    suggestions.appendChild(div);
+                });
+            } else {
+                suggestions.classList.add('hidden');
+            }
+        });
+
+        // عرض بيانات المدرسة المختارة
+        function showSchoolData(school) {
+            welcome.classList.add('hidden');
+            cardContainer.classList.remove('hidden');
+            cardContainer.innerHTML = ''; // تفريغ الحاوية لبدء الأنيميشن
+            
+            // تمرير للأعلى بسلاسة عند الاختيار في الموبايل
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            setTimeout(() => {
+                cardContainer.classList.add('card-animate');
+                
+                let subjectsHtml = '';
+                school.pages.forEach((pageCount, i) => {
+                    const schoolRateNum = parseInt(school.rates[i]);
+                    const provRateNum = parseInt(subjectSpecs[i].prov);
+                    const isHigher = schoolRateNum >= provRateNum;
+                    const diff = schoolRateNum - provRateNum;
+
+                    subjectsHtml += `
+                        <div class="group bg-white p-5 md:p-6 rounded-[2rem] border border-slate-200 hover:shadow-xl hover:border-rose-200 transition-all duration-300">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="bg-slate-50 p-3 rounded-2xl group-hover:bg-rose-50 transition-colors">
+                                    <span class="text-3xl">${subjectSpecs[i].icon}</span>
+                                </div>
+                                <div class="text-left">
+                                    <span class="text-[10px] font-black text-slate-400 block uppercase">معدل المديرية</span>
+                                    <span class="text-sm font-black text-slate-700">${subjectSpecs[i].prov}</span>
+                                </div>
+                            </div>
+
+                            <h3 class="text-lg md:text-xl font-black text-slate-800 mb-1">${subjectSpecs[i].name}</h3>
+                            <div class="flex items-baseline gap-1 mb-4">
+                                <span class="text-3xl font-black text-rose-600">${pageCount}</span>
+                                <span class="text-xs font-bold text-slate-400 uppercase">صفحة منجزة</span>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-[10px] font-bold text-slate-500">نسبة الإنجاز</span>
+                                    <span class="text-[10px] font-black ${isHigher ? 'text-emerald-600' : 'text-rose-600'}">${school.rates[i]}</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                    <div class="progress-bar h-full ${isHigher ? 'bg-emerald-500' : 'bg-rose-500'}" style="width: ${school.rates[i]}"></div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 ${isHigher ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'} p-2 rounded-xl border border-transparent">
+                                ${isHigher ? 
+                                    '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" /></svg>' : 
+                                    '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 12.586l-4.293-4.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 12.414 14.586 16H12z" clip-rule="evenodd" /></svg>'}
+                                <span class="text-[10px] font-black uppercase tracking-wider">
+                                    ${isHigher ? `أعلى بـ (${diff}%)` : `أقل بـ (${Math.abs(diff)}%)`} من المعدل
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                cardContainer.innerHTML = `
+                    <div class="bg-white rounded-[2.5rem] md:rounded-[3rem] shadow-2xl overflow-hidden border border-white">
+                        <div class="bg-rose-950 p-6 md:p-12 text-white relative">
+                            <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                                <svg width="100%" height="100%"><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"/></pattern><rect width="100%" height="100%" fill="url(#grid)" /></svg>
+                            </div>
+                            
+                            <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+                                <div class="text-center md:text-right">
+                                    <div class="inline-flex items-center gap-2 bg-rose-500/20 text-rose-300 px-4 py-1 rounded-full text-[10px] font-black mb-4 border border-rose-500/30 uppercase tracking-widest">
+                                        <span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
+                                        الفرع الأدبي - تقرير 2026
+                                    </div>
+                                    <h2 class="text-3xl md:text-5xl lg:text-6xl font-black mb-4 tracking-tight leading-tight">${school.name}</h2>
+                                    <p class="text-rose-200/70 font-bold max-w-xl text-sm md:text-base">تحليل إحصائي شامل للأداء الأكاديمي بناءً على عدد الصفحات المنجزة ونسبة التحصيل مقارنة بالمتوسط العام لمديرية قلقيلية.</p>
+                                </div>
+                                
+                                <div class="flex gap-4 no-print w-full md:w-auto">
+                                    <button onclick="window.print()" class="w-full md:w-auto bg-white text-rose-950 hover:bg-rose-50 px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-3 shadow-xl">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2z" /></svg>
+                                        طباعة التقرير
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-5 md:p-12 bg-slate-50">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                                ${subjectsHtml}
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 md:p-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-400">
+                            <div class="flex items-center gap-4">
+                                <span class="text-[10px] md:text-sm font-bold bg-slate-100 px-3 py-1 rounded-lg italic">تاريخ الاستخراج: ${new Date().toLocaleDateString('ar-EG')}</span>
+                            </div>
+                            <span class="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-rose-400 text-center">تطوير: وحدة المتابعة الميدانية - مديرية قلقيلية</span>
+                        </div>
+                    </div>
+                `;
+            }, 50);
+        }
+
+        // إغلاق قائمة الاقتراحات عند الضغط خارجها
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                suggestions.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
