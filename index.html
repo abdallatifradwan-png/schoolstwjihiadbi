@@ -3,263 +3,407 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام تحليل مؤشرات الإنجاز - الفرع الأدبي - قلقيلية</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <title>البطاقة التعريفية المدرسية</title>
     
+    <!-- استدعاء المكتبات -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- إعدادات Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Cairo', 'sans-serif'] },
+                    colors: {
+                        navy: { DEFAULT: '#1e3a8a', light: '#2563eb', dark: '#172554' },
+                        gold: { DEFAULT: '#e17b22', light: '#f59e0b', dark: '#b45309' },
+                        pagebg: '#fcfcfc'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- تنسيقات الطباعة والواجهة -->
     <style>
-        body { 
-            font-family: 'Tajawal', sans-serif; 
-            background-color: #f8fafc; 
-            scroll-behavior: smooth;
+        body { background-color: #e2e8f0; margin: 0; padding: 0; }
+        
+        /* إعدادات الطباعة الدقيقة A4 */
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            html, body { height: 100%; margin: 0 !important; padding: 0 !important; overflow: hidden; background-color: white !important; }
+            .no-print { display: none !important; }
+            #printable-card {
+                width: 210mm !important;
+                height: 297mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
 
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px); 
+        @media screen {
+            #printable-card {
+                width: 210mm;
+                height: 297mm;
+                margin: 20px auto;
+                background: #fcfcfc;
+                box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+                border: 1px solid #cbd5e1;
+            }
         }
 
-        .card-animate { 
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-        }
-
-        @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(40px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #be123c; border-radius: 10px; }
-
-        .progress-bar { 
-            transition: width 1.5s ease-in-out; 
-        }
-
-        @media print { 
-            .no-print { display: none !important; } 
-            .print-only { display: block !important; } 
-            body { background: white; } 
-            .card-animate { animation: none; transform: none; }
-            main { padding: 0 !important; }
-        }
+        .data-box { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; }
+        .section-icon { color: #1e3a8a; }
     </style>
 </head>
-<body class="custom-scrollbar antialiased text-slate-900">
+<body class="font-sans text-slate-800">
 
-    <div id="app" class="min-h-screen flex flex-col">
-        <header class="bg-rose-950 text-white shadow-2xl sticky top-0 z-50 no-print">
-            <div class="max-w-7xl mx-auto px-4 py-4 lg:py-6">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div class="flex items-center gap-4 text-center md:text-right">
-                        <div class="bg-rose-500/20 p-3 rounded-2xl border border-rose-400/30 hidden sm:block">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-rose-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h1 class="text-xl md:text-2xl font-black tracking-tight">نظام تحليل مؤشرات الإنجاز</h1>
-                            <p class="text-rose-300 text-xs md:text-sm font-medium">مديرية قلقيلية | قسم المتابعة الميدانية | الفرع الأدبي</p>
-                            <p class="text-rose-300 text-xs md:text-sm font-medium"> أ. عبداللطيف رضوان </p>
-                        </div>
-                    </div>
-                    
-                    <div class="relative w-full md:w-[450px]">
-                        <input type="text" id="search-input" autoComplete="off"
-                            placeholder="ابحث عن اسم المدرسة..." 
-                            class="w-full bg-rose-900/40 border border-rose-700/50 text-white placeholder-rose-400 focus:ring-4 focus:ring-rose-500/20 focus:border-rose-400 rounded-2xl py-3 md:py-4 pr-12 pl-4 transition-all font-bold outline-none shadow-inner text-sm md:text-base">
-                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-rose-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <div id="suggestions" class="absolute w-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50 hidden max-h-80 overflow-y-auto custom-scrollbar text-slate-800"></div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <main class="max-w-7xl mx-auto p-4 md:p-8 flex-grow w-full">
-            <div id="welcome-msg" class="flex flex-col items-center justify-center py-16 md:py-24 text-center no-print">
-                <div class="relative">
-                    <div class="absolute inset-0 bg-rose-200 blur-3xl rounded-full opacity-30 animate-pulse"></div>
-                    <div class="relative w-32 h-32 md:w-40 md:h-40 bg-white rounded-[2.5rem] md:rounded-[3rem] flex items-center justify-center mb-8 border border-slate-100 shadow-2xl animate-bounce">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 md:w-20 md:h-20 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                        </svg>
-                    </div>
-                </div>
-                <h2 class="text-2xl md:text-4xl font-black text-slate-800 mb-4">مرحباً بك في لوحة المؤشرات (الفرع الأدبي)</h2>
-                <p class="text-slate-500 font-bold max-w-lg leading-relaxed px-4">يرجى اختيار اسم المدرسة لعرض التقرير التفصيلي لنسب الإنجاز حتى 15-2-2026 مقارنة بمعدل المديرية العام المستخرج من السجلات الرسمية.</p>
-            </div>
-
-            <div id="school-card" class="hidden"></div>
-        </main>
-
-        <footer class="bg-white border-t border-slate-200 py-8 no-print mt-auto">
-            <div class="text-center">
-                <p class="text-slate-500 text-[10px] md:text-xs font-black tracking-widest uppercase px-4">جميع الحقوق محفوظة © 2026 - أ. عبداللطيف رضوان</p>
-            </div>
-        </footer>
+    <!-- شريط التحكم (لا يظهر في الطباعة) -->
+    <div class="no-print bg-slate-900 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-file-pdf text-gold text-2xl"></i>
+            <h1 class="font-bold text-lg">نظام البطاقات المدرسية الموحد</h1>
+        </div>
+        <div class="flex gap-3">
+            <input id="excel-file" type="file" class="hidden" accept=".xlsx, .xls" />
+            <button onclick="document.getElementById('excel-file').click()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition">
+                <i class="fas fa-file-excel ml-2 text-green-400"></i> استيراد من Excel
+            </button>
+            <select id="school-select" class="bg-white text-slate-900 px-4 py-2 rounded-lg text-sm font-bold outline-none cursor-pointer">
+                <option value="demo">عرض النموذج التجريبي</option>
+            </select>
+            <button onclick="window.print()" class="bg-gold hover:bg-gold-dark text-white px-6 py-2 rounded-lg text-sm font-bold transition shadow-md">
+                <i class="fas fa-print ml-2"></i> طباعة / حفظ PDF
+            </button>
+        </div>
     </div>
 
-    <script>
-        // البيانات المستخرجة بدقة من الصور (36 مدرسة)
-        // الترتيب في المصفوفات: [العربية، الانجليزية، الرياضيات، الجغرافيا، الثقافة العلمية، التكنولوجيا، التاريخ، التربية الاسلامية]
-        const schoolsData = [
-            { name: "الرماضين الثانوية المختلطة", pages: [174, 117, 88, 103, 81, 83, 80, 107], rates: ["88%", "90%", "77%", "84%", "95%", "92%", "80%", "91%"] },
-            { name: "الصمود الثانوية المختلطة", pages: [145, 97, 89, 101, 72, 82, 88, 76], rates: ["74%", "75%", "77%", "82%", "85%", "91%", "88%", "64%"] },
-            { name: "الفندق الثانوية المختلطة", pages: [134, 80, 85, 91, 70, 80, 85, 91], rates: ["68%", "62%", "74%", "74%", "82%", "89%", "85%", "77%"] },
-            { name: "النبي الياس الثانوية المختلطة", pages: [151, 100, 104, 105, 70, 87, 84, 99], rates: ["77%", "77%", "90%", "85%", "82%", "97%", "84%", "84%"] },
-            { name: "اماتين الثانوية المختلطة", pages: [155, 100, 94, 100, 62, 65, 78, 98], rates: ["79%", "77%", "82%", "81%", "73%", "72%", "78%", "83%"] },
-            { name: "باقة الحطب الثانوية المختلطة", pages: [85, 62, 90, 101, 71, 76, 77, 89], rates: ["43%", "48%", "78%", "82%", "84%", "84%", "77%", "75%"] },
-            { name: "بنات الشيماء الثانوية", pages: [146, 90, 81, 100, 66, 65, 81, 87], rates: ["74%", "69%", "70%", "81%", "78%", "72%", "81%", "74%"] },
-            { name: "بنات العمرية الثانوية", pages: [143, 97, 83, 105, 66, 80, 87, 106], rates: ["73%", "75%", "72%", "85%", "78%", "89%", "87%", "90%"] },
-            { name: "بنات اماتين الثانوية", pages: [153, 100, 92, 104, 73, 80, 84, 100], rates: ["78%", "77%", "80%", "85%", "86%", "89%", "84%", "85%"] },
-            { name: "بنات باقة الحطب الثانوية", pages: [144, 103, 84, 106, 72, 71, 90, 103], rates: ["73%", "79%", "73%", "86%", "85%", "79%", "90%", "87%"] },
-            { name: "بنات جيت الثانوية", pages: [182, 89, 85, 108, 74, 85, 86, 107], rates: ["92%", "68%", "74%", "88%", "87%", "94%", "86%", "91%"] },
-            { name: "بنات جينصافوط الثانوية", pages: [154, 110, 88, 106, 67, 80, 84, 99], rates: ["78%", "85%", "77%", "86%", "79%", "89%", "84%", "84%"] },
-            { name: "بنات جيوس الثانوية", pages: [146, 116, 89, 99, 46, 85, 81, 102], rates: ["74%", "89%", "77%", "80%", "54%", "94%", "81%", "86%"] },
-            { name: "بنات حبلة الثانوية", pages: [145, 113, 88, 106, 63, 85, 88, 100], rates: ["74%", "87%", "77%", "86%", "74%", "94%", "88%", "86%"] },
-            { name: "بنات حجة الثانوية", pages: [154, 95, 90, 84, 81, 75, 84, 101], rates: ["78%", "73%", "78%", "68%", "95%", "83%", "84%", "86%"] },
-            { name: "بنات راس عطية الثانوية", pages: [137, 90, 84, 106, 67, 77, 85, 91], rates: ["70%", "69%", "73%", "86%", "79%", "86%", "85%", "77%"] },
-            { name: "بنات سنيريا الثانوية", pages: [135, 105, 88, 104, 66, 86, 84, 85], rates: ["69%", "81%", "77%", "85%", "78%", "96%", "84%", "72%"] },
-            { name: "بنات عزون عتمة الثانوية", pages: [160, 80, 90, 95, 62, 83, 86, 103], rates: ["81%", "62%", "78%", "77%", "73%", "92%", "86%", "87%"] },
-            { name: "بنات فاطمة سرور الثانوية", pages: [107, 100, 107, 95, 73, 78, 78, 102], rates: ["54%", "77%", "93%", "77%", "86%", "87%", "78%", "86%"] },
-            { name: "بنات كفر قدوم الثانوية", pages: [170, 102, 84, 100, 73, 65, 86, 101], rates: ["86%", "78%", "73%", "81%", "86%", "72%", "86%", "86%"] },
-            { name: "بنات كفر ثلث الثانوية", pages: [165, 116, 88, 90, 65, 91, 85, 92], rates: ["84%", "89%", "77%", "73%", "76%", "101%", "85%", "78%"] },
-            { name: "جيت الثانوية المختلطة", pages: [84, 92, 94, 88, 57, 80, 89, 97], rates: ["43%", "71%", "82%", "72%", "67%", "89%", "89%", "82%"] },
-            { name: "ذكور السعدية الثانوية", pages: [81, 84, 90, 109, 60, 56, 91, 92], rates: ["41%", "65%", "78%", "89%", "71%", "62%", "91%", "78%"] },
-            { name: "ذكور حبلة الثانوية", pages: [89, 84, 89, 104, 63, 92, 80, 106], rates: ["45%", "65%", "77%", "85%", "74%", "102%", "80%", "90%"] },
-            { name: "ذكور راس عطية الثانوية", pages: [80, 88, 83, 96, 63, 75, 83, 92], rates: ["41%", "68%", "72%", "78%", "74%", "83%", "83%", "78%"] },
-            { name: "ذكور سنيريا الثانوية", pages: [142, 100, 85, 94, 65, 46, 81, 84], rates: ["72%", "77%", "74%", "76%", "76%", "51%", "81%", "71%"] },
-            { name: "ذكور عبد الرحيم عمر الثانوية", pages: [120, 85, 93, 100, 52, 58, 89, 78], rates: ["61%", "65%", "81%", "81%", "61%", "64%", "89%", "66%"] },
-            { name: "ذكور عزون الثانوية", pages: [130, 70, 90, 93, 62, 64, 65, 85], rates: ["66%", "54%", "78%", "76%", "73%", "71%", "65%", "72%"] },
-            { name: "ذكور كفر ثلث الثانوية", pages: [148, 97, 75, 86, 66, 89, 80, 88], rates: ["75%", "75%", "65%", "70%", "78%", "99%", "80%", "75%"] },
-            { name: "ذكور كفر قدوم الثانوية", pages: [76, 86, 90, 95, 66, 51, 80, 95], rates: ["39%", "66%", "78%", "77%", "78%", "57%", "80%", "81%"] },
-            { name: "ذكور مسقط الثانوية", pages: [77, 88, 85, 91, 64, 84, 80, 105], rates: ["39%", "68%", "74%", "74%", "75%", "93%", "80%", "89%"] },
-            { name: "سلمان الثانوية المختلطة", pages: [149, 142, 104, 101, 66, 98, 81, 97], rates: ["76%", "109%", "90%", "82%", "78%", "109%", "81%", "82%"] },
-            { name: "عزون - بيت امين الثانوية", pages: [137, 84, 83, 92, 69, 77, 80, 98], rates: ["70%", "65%", "72%", "75%", "81%", "86%", "80%", "83%"] },
-            { name: "فرعتا الثانوية المختلطة", pages: [153, 97, 85, 126, 75, 80, 77, 101], rates: ["78%", "75%", "74%", "102%", "88%", "89%", "77%", "86%"] },
-            { name: "فلامية الثانوية المختلطة", pages: [187, 120, 86, 104, 78, 90, 87, 100], rates: ["95%", "92%", "75%", "85%", "92%", "100%", "87%", "85%"] },
-            { name: "كفر لاقف الثانوية المختلطة", pages: [135, 106, 88, 101, 68, 70, 76, 108], rates: ["69%", "82%", "77%", "82%", "80%", "78%", "76%", "92%"] }
-        ];
-
-        // معدلات المديرية المستخرجة من ترويسة الجداول
-        const subjectSpecs = [
-            { name: "اللغة العربية", prov: "69%", icon: "📖" }, 
-            { name: "اللغة الانجليزية", prov: "74%", icon: "🌐" },
-            { name: "الرياضيات", prov: "77%", icon: "📐" }, 
-            { name: "الجغرافيا", prov: "80%", icon: "🌍" },
-            { name: "الثقافة العلمية", prov: "79%", icon: "🧪" }, 
-            { name: "التكنولوجيا", prov: "83%", icon: "💻" }, 
-            { name: "التاريخ", prov: "83%", icon: "📜" }, 
-            { name: "التربية الاسلامية", prov: "82%", icon: "🕌" }
-        ];
-
-        const input = document.getElementById('search-input');
-        const suggestions = document.getElementById('suggestions');
-        const cardContainer = document.getElementById('school-card');
-        const welcome = document.getElementById('welcome-msg');
-
-        input.addEventListener('input', (e) => {
-            const val = e.target.value.trim();
-            suggestions.innerHTML = '';
-            if (val.length < 1) { suggestions.classList.add('hidden'); return; }
+    <!-- حاوية البطاقة (A4) -->
+    <div id="printable-card" class="flex flex-col relative bg-pagebg">
+        
+        <!-- ================= القسم الأول: بيانات المدير ================= -->
+        <div class="pt-8 px-10 pb-4">
             
-            const matches = schoolsData.filter(s => s.name.includes(val));
-            if (matches.length > 0) {
-                suggestions.classList.remove('hidden');
-                matches.forEach(s => {
-                    const div = document.createElement('div');
-                    div.className = 'p-4 hover:bg-rose-50 cursor-pointer font-bold border-b border-slate-100 flex justify-between items-center';
-                    div.innerHTML = `<span>${s.name}</span> <span class="text-[10px] bg-rose-100 text-rose-700 px-2 py-1 rounded-md">أدبي</span>`;
-                    div.onclick = () => { showSchoolData(s); suggestions.classList.add('hidden'); input.value = ''; };
-                    suggestions.appendChild(div);
-                });
-            } else { suggestions.classList.add('hidden'); }
-        });
-
-        function showSchoolData(school) {
-            welcome.classList.add('hidden');
-            cardContainer.classList.remove('hidden');
-            cardContainer.innerHTML = '';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            setTimeout(() => {
-                cardContainer.classList.add('card-animate');
-                let subjectsHtml = '';
-                school.pages.forEach((pageCount, i) => {
-                    const schoolRateNum = parseInt(school.rates[i]);
-                    const provRateNum = parseInt(subjectSpecs[i].prov);
-                    const isHigher = schoolRateNum >= provRateNum;
-                    const diff = schoolRateNum - provRateNum;
-
-                    subjectsHtml += `
-                        <div class="group bg-white p-5 rounded-[2rem] border border-slate-200 hover:shadow-xl transition-all duration-300">
-                            <div class="flex justify-between items-start mb-6">
-                                <span class="text-3xl">${subjectSpecs[i].icon}</span>
-                                <div class="text-left">
-                                    <span class="text-[9px] font-black text-slate-400 block uppercase">معدل المديرية</span>
-                                    <span class="text-sm font-black text-slate-700">${subjectSpecs[i].prov}</span>
-                                </div>
-                            </div>
-                            <h3 class="text-lg font-black text-slate-800 mb-1">${subjectSpecs[i].name}</h3>
-                            <div class="flex items-baseline gap-1 mb-4">
-                                <span class="text-3xl font-black text-rose-600">${pageCount}</span>
-                                <span class="text-[10px] font-bold text-slate-400">صفحة منجزة</span>
-                            </div>
-                            <div class="mb-4">
-                                <div class="flex justify-between mb-1">
-                                    <span class="text-[10px] font-bold text-slate-500">نسبة الإنجاز</span>
-                                    <span class="text-[10px] font-black ${isHigher ? 'text-emerald-600' : 'text-rose-600'}">${school.rates[i]}</span>
-                                </div>
-                                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                    <div class="progress-bar h-full ${isHigher ? 'bg-emerald-500' : 'bg-rose-500'}" style="width: ${school.rates[i]}"></div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 ${isHigher ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'} p-2 rounded-xl">
-                                <span class="text-[9px] font-black uppercase tracking-wider">
-                                    ${isHigher ? `أعلى بـ (${diff}%)` : `أقل بـ (${Math.abs(diff)}%)`} من المعدل
-                                </span>
-                            </div>
+            <!-- ترويسة المدير -->
+            <div class="flex justify-between items-start mb-8">
+                <!-- اليمين: صورة المدير وبياناته -->
+                <div class="flex items-center gap-5">
+                    <div class="w-24 h-24 bg-white border-2 border-navy rounded-2xl flex items-center justify-center shadow-sm overflow-hidden z-10 relative">
+                        <i class="fas fa-user-tie text-5xl text-navy absolute bottom-0 translate-y-1"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="bg-navy text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-sm">مدير المدرسة</span>
+                            <span id="card-p-eval-badge" class="bg-green-100 text-green-700 text-[11px] px-3 py-1 rounded-full font-bold">ممتاز (<span id="card-p-eval">97.8%</span>)</span>
                         </div>
-                    `;
-                });
+                        <h2 id="card-p-name" class="text-3xl font-black text-navy mb-1 tracking-tight">أ. إبراهيم خليل محمد</h2>
+                        <p class="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+                            <i class="fas fa-map-marker-alt text-gold"></i>
+                            <span id="card-p-residence">القدس - حي بيت حنينا</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- اليسار: الشعار الباهت -->
+                <div class="text-left opacity-15">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Emblem_of_Palestine.svg" class="h-24 object-contain">
+                </div>
+            </div>
 
-                cardContainer.innerHTML = `
-                    <div class="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-white">
-                        <div class="bg-rose-950 p-6 md:p-12 text-white relative">
-                            <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
-                                <div class="text-center md:text-right">
-                                    <div class="inline-flex items-center gap-2 bg-rose-500/20 text-rose-300 px-4 py-1 rounded-full text-[10px] font-black mb-4 border border-rose-500/30 uppercase">
-                                        تقرير الفرع الأدبي - مديرية قلقيلية
-                                    </div>
-                                    <h2 class="text-3xl md:text-5xl font-black mb-4 tracking-tight">${school.name}</h2>
-                                    <p class="text-rose-200/70 font-bold max-w-xl text-sm">تحليل إحصائي شامل للأداء بناءً على السجلات الرسمية المحدثة.</p>
-                                </div>
-                                <button onclick="window.print()" class="no-print bg-white text-rose-950 hover:bg-rose-50 px-8 py-4 rounded-2xl font-black transition-all shadow-xl flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2z" /></svg>
-                                    طباعة التقرير
-                                </button>
-                            </div>
+            <!-- شبكة الإحصائيات (3 أعمدة × صفين) -->
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="data-box text-center shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold mb-1.5">رقم الهوية</p>
+                    <p id="card-p-id" class="text-base font-black text-navy">401234567</p>
+                </div>
+                <div class="data-box text-center shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold mb-1.5">تاريخ الميلاد</p>
+                    <p id="card-p-dob" class="text-base font-black text-navy">12/05/1980</p>
+                </div>
+                <div class="data-box text-center shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold mb-1.5">سنوات الخبرة</p>
+                    <p id="card-p-exp" class="text-base font-black text-navy">22 سنة</p>
+                </div>
+                <div class="data-box text-center shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold mb-1.5">تاريخ التعيين كمدير</p>
+                    <p id="card-p-appoint" class="text-base font-black text-navy">01/09/2015</p>
+                </div>
+                <div class="data-box text-center shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold mb-1.5">دخول المدرسة الحالية</p>
+                    <p id="card-p-join" class="text-base font-black text-navy">20/08/2021</p>
+                </div>
+                <div class="data-box text-center shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold mb-1.5">سنوات الخدمة بمدرسته</p>
+                    <p id="card-p-service" class="text-base font-black text-navy">3 سنوات</p>
+                </div>
+            </div>
+
+            <!-- السجل التدريبي -->
+            <div class="data-box shadow-sm mb-4">
+                <h3 class="text-[12px] font-black text-navy border-b border-slate-100 pb-2 mb-2 flex items-center gap-2">
+                    <i class="fas fa-graduation-cap text-slate-500"></i> السجل التدريبي والدورات
+                </h3>
+                <p id="card-p-courses" class="text-xs font-bold text-slate-600 leading-relaxed text-right">دبلوم القيادة التربوية الفاعلة، شهادة خبير تكنولوجيا التعليم، دورة التخطيط الاستراتيجي المتطور.</p>
+            </div>
+        </div>
+
+        <!-- فاصل أفقي -->
+        <div class="w-full h-[1px] bg-slate-200 shadow-sm mb-2"></div>
+
+        <!-- ================= القسم الثاني: بيانات المدرسة ================= -->
+        <div class="flex-grow flex flex-col px-10 pt-4 pb-8">
+            
+            <!-- ترويسة الوزارة وتصنيف المدرسة -->
+            <div class="grid grid-cols-3 items-start mb-6">
+                <!-- اليمين (بيانات الوزارة) -->
+                <div class="text-right pt-2">
+                    <p class="text-[10px] font-bold text-slate-400">دولة فلسطين</p>
+                    <p class="text-[13px] font-black text-navy my-0.5">وزارة التربية والتعليم العالي</p>
+                    <p class="text-[11px] font-bold text-gold">مديرية <span id="card-s-dir">القدس الشريف</span></p>
+                </div>
+                
+                <!-- الوسط (الشعار) -->
+                <div class="flex justify-center">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Emblem_of_Palestine.svg" class="h-[75px] object-contain drop-shadow-sm">
+                </div>
+
+                <!-- اليسار (التصنيف) -->
+                <div class="flex justify-end">
+                    <div class="bg-navy rounded-xl text-center w-28 overflow-hidden shadow-md flex flex-col border-b-[5px] border-gold">
+                        <div class="py-1.5 bg-navy border-b border-white/10">
+                            <p class="text-[9px] font-bold text-white/80">تصنيف المدرسة</p>
                         </div>
-                        <div class="p-5 md:p-12 bg-slate-50">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                                ${subjectsHtml}
-                            </div>
-                        </div>
-                        <div class="bg-white p-6 border-t border-slate-100 text-center">
-                            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-rose-400">وحدة المتابعة الميدانية - مديرية قلقيلية</span>
+                        <div class="py-2.5 bg-navy">
+                            <p id="card-s-class" class="text-2xl font-black text-white leading-none">A</p>
                         </div>
                     </div>
-                `;
-            }, 50);
-        }
+                </div>
+            </div>
 
-        document.addEventListener('click', (e) => {
-            if (!input.contains(e.target) && !suggestions.contains(e.target)) suggestions.classList.add('hidden');
+            <!-- اسم المدرسة والمستوى (بالمكان المطلوب تماماً) -->
+            <div class="text-center mb-8">
+                <h1 id="card-s-name" class="text-4xl font-black text-slate-800 mb-3 tracking-tight">مدرسة فلسطين الثانوية للبنين</h1>
+                <div class="inline-flex items-center gap-2 bg-white border border-slate-200 px-5 py-1.5 rounded-full shadow-sm">
+                    <i class="fas fa-school text-gold text-sm"></i>
+                    <span id="card-s-level" class="text-xs font-black text-navy">الثانوية العامة - علمي وأدبي</span>
+                </div>
+            </div>
+
+            <!-- إحصائيات المدرسة (4 صناديق) -->
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <!-- الأول من اليمين (الطلبة) -->
+                <div class="bg-navy rounded-xl p-4 text-center shadow-md border-b-4 border-navy-dark flex flex-col items-center justify-center h-24">
+                    <i class="fas fa-users text-gold text-xl mb-1.5"></i>
+                    <p class="text-[10px] text-white/70 font-bold mb-1">الطلبة</p>
+                    <p id="card-s-students" class="text-base font-black text-white">1,050 طالب</p>
+                </div>
+                <!-- الثاني -->
+                <div class="data-box text-center shadow-sm flex flex-col items-center justify-center h-24">
+                    <i class="fas fa-layer-group text-navy text-xl mb-1.5"></i>
+                    <p class="text-[10px] text-slate-400 font-bold mb-1">الشعب</p>
+                    <p id="card-s-sections" class="text-base font-black text-navy">28 شعبة</p>
+                </div>
+                <!-- الثالث -->
+                <div class="data-box text-center shadow-sm flex flex-col items-center justify-center h-24">
+                    <i class="fas fa-landmark text-navy text-xl mb-1.5"></i>
+                    <p class="text-[10px] text-slate-400 font-bold mb-1">المراكز</p>
+                    <p id="card-s-centers" class="text-base font-black text-navy">12 مركز</p>
+                </div>
+                <!-- الرابع -->
+                <div class="data-box text-center shadow-sm flex flex-col items-center justify-center h-24">
+                    <i class="fas fa-flask text-navy text-xl mb-1.5"></i>
+                    <p class="text-[10px] text-slate-400 font-bold mb-1">تطويرية</p>
+                    <p id="card-s-dev" class="text-[11px] font-black text-navy leading-snug">مختبر STEM، مكتبة، حاسوب</p>
+                </div>
+            </div>
+
+            <!-- المشاريع -->
+            <div class="space-y-4 mb-6">
+                <!-- مشاريع تعليمية -->
+                <div class="data-box shadow-sm border-r-[6px] border-r-gold pr-4">
+                    <h3 class="text-[12px] font-black text-navy mb-2 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-slate-500"></i> المشاريع التعليمية والريادية
+                    </h3>
+                    <p id="card-s-edu" class="text-xs font-bold text-slate-600">تطبيق برنامج STEM المتكامل، مبادرة 'مدرستي برمجتي'، ومشروع القراءة التحليلية لتنمية مهارات التفكير الناقد.</p>
+                </div>
+                <!-- مشاريع ترميم -->
+                <div class="data-box shadow-sm border-r-[6px] border-r-navy pr-4">
+                    <h3 class="text-[12px] font-black text-navy mb-2 flex items-center gap-2">
+                        <i class="fas fa-tools text-slate-500"></i> مشاريع الترميم والإنشاءات
+                    </h3>
+                    <p id="card-s-build" class="text-xs font-bold text-slate-600">صيانة الساحات، تركيب نظام طاقة شمسية، وتجهيز الغرف الصفية بألواح ذكية.</p>
+                </div>
+            </div>
+
+            <!-- ================= التذييل: الاتصال والوصول الرقمي ================= -->
+            <div class="mt-auto border-t border-slate-200 pt-6 flex justify-between items-end pb-2">
+                
+                <!-- اليسار: رمز QR -->
+                <div class="flex flex-col items-center bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm">
+                    <div id="qrcode" class="w-[60px] h-[60px] flex items-center justify-center"></div>
+                    <p class="text-[7px] font-bold text-slate-400 mt-1.5 tracking-wider">DIGITAL ACCESS</p>
+                </div>
+
+                <!-- اليمين: معلومات الاتصال (مرتبة عمودياً) -->
+                <div class="flex flex-col gap-3 text-right">
+                    <div class="flex items-center justify-end gap-3">
+                        <div>
+                            <p class="text-[9px] text-slate-400 font-bold mb-0.5">هاتف</p>
+                            <p id="card-s-phone" class="text-[11px] font-black text-slate-800">02-6543210</p>
+                        </div>
+                        <i class="fas fa-phone-alt text-gold w-4 text-center text-sm"></i>
+                    </div>
+                    
+                    <div class="flex items-center justify-end gap-3">
+                        <div>
+                            <p class="text-[9px] text-slate-400 font-bold mb-0.5">جوال</p>
+                            <p id="card-s-mobile" class="text-[11px] font-black text-slate-800">059-8888888</p>
+                        </div>
+                        <i class="fas fa-mobile-alt text-gold w-4 text-center text-sm"></i>
+                    </div>
+                    
+                    <div class="flex items-center justify-end gap-3">
+                        <div>
+                            <p class="text-[9px] text-slate-400 font-bold mb-0.5">البريد الإلكتروني</p>
+                            <p id="card-s-email" class="text-[11px] font-black text-slate-800">school@edu.ps</p>
+                        </div>
+                        <i class="fas fa-envelope text-gold w-4 text-center text-sm"></i>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- كود الجافاسكربت لإدارة البيانات -->
+    <script>
+        const demoData = {
+            "المديرية": "القدس الشريف",
+            "اسم المدرسة": "مدرسة فلسطين الثانوية للبنين",
+            "مستوى المدرسة": "الثانوية العامة - علمي وأدبي",
+            "تصنيف المدرسة": "A",
+            "الطلبة": "1,050 طالب",
+            "الشعب": "28 شعبة",
+            "المراكز": "12 مركز",
+            "تطويرية": "مختبر STEM، مكتبة، حاسوب",
+            "مشاريع تعليمية": "تطبيق برنامج STEM المتكامل، مبادرة 'مدرستي برمجتي'، ومشروع القراءة التحليلية لتنمية مهارات التفكير الناقد.",
+            "مشاريع ترميم": "صيانة الساحات، تركيب نظام طاقة شمسية، وتجهيز الغرف الصفية بألواح ذكية.",
+            "هاتف": "02-6543210",
+            "جوال": "059-8888888",
+            "البريد الإلكتروني": "school@edu.ps",
+            "اسم المدير": "أ. إبراهيم خليل محمد",
+            "رقم هويته": "401234567",
+            "تاريخ ميلاده": "12/05/1980",
+            "تاريخ التعيين كمدير": "01/09/2015",
+            "سنوات الخبرة": "22 سنة",
+            "دخول المدرسة الحالية": "20/08/2021",
+            "سنوات الخدمة بمدرسته": "3 سنوات",
+            "مكان السكن": "القدس - حي بيت حنينا",
+            "الدورات التدريبية": "دبلوم القيادة التربوية الفاعلة، شهادة خبير تكنولوجيا التعليم، دورة التخطيط الاستراتيجي المتطور.",
+            "تقييمه": "97.8%"
+        };
+
+        let schoolsData = [];
+        window.onload = () => renderCard(demoData);
+
+        const fileInput = document.getElementById('excel-file');
+        const schoolSelect = document.getElementById('school-select');
+
+        // قراءة ملف الإكسل
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const workbook = XLSX.read(new Uint8Array(event.target.result), {type: 'array'});
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                schoolsData = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                
+                schoolSelect.innerHTML = '<option value="" disabled>-- اختر المدرسة --</option>';
+                schoolsData.forEach((s, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = s["اسم المدرسة"] || s["المدرسة"] || `مدرسة ${i+1}`;
+                    schoolSelect.appendChild(opt);
+                });
+                
+                if(schoolsData.length > 0) { 
+                    schoolSelect.value = 0; 
+                    renderCard(schoolsData[0]); 
+                }
+            };
+            reader.readAsArrayBuffer(file);
         });
+
+        // تغيير المدرسة من القائمة
+        schoolSelect.addEventListener('change', (e) => {
+            if(e.target.value === "demo") renderCard(demoData);
+            else renderCard(schoolsData[e.target.value]);
+        });
+
+        // دالة عرض البيانات على البطاقة
+        function renderCard(data) {
+            // دالة مساعدة للبحث عن المفاتيح المحتملة (تجنب أخطاء التسمية في الإكسل)
+            const get = (keys) => {
+                for (let k of keys) {
+                    const found = Object.keys(data).find(key => key.trim() === k || key.includes(k));
+                    if (found && data[found] !== "") return data[found];
+                }
+                return "---";
+            };
+
+            // بيانات المدير
+            document.getElementById('card-p-name').textContent = get(['اسم المدير', 'المدير']);
+            document.getElementById('card-p-eval').textContent = get(['تقييمه', 'التقييم', 'النسبة']);
+            document.getElementById('card-p-id').textContent = get(['رقم هويته', 'الهوية', 'رقم الهوية']);
+            document.getElementById('card-p-dob').textContent = get(['تاريخ ميلاده', 'الميلاد']);
+            document.getElementById('card-p-exp').textContent = get(['سنوات الخبرة', 'الخبرة']);
+            document.getElementById('card-p-appoint').textContent = get(['تاريخ التعيين كمدير', 'تعيين']);
+            document.getElementById('card-p-join').textContent = get(['دخول المدرسة الحالية', 'دخول']);
+            document.getElementById('card-p-service').textContent = get(['سنوات الخدمة بمدرسته', 'الخدمة']);
+            document.getElementById('card-p-residence').textContent = get(['مكان السكن', 'السكن', 'العنوان']);
+            document.getElementById('card-p-courses').textContent = get(['الدورات التدريبية', 'الدورات', 'السجل التدريبي']);
+
+            // بيانات المدرسة
+            document.getElementById('card-s-dir').textContent = get(['المديرية', 'مديرية']);
+            document.getElementById('card-s-name').textContent = get(['اسم المدرسة', 'المدرسة']);
+            document.getElementById('card-s-class').textContent = get(['تصنيف المدرسة', 'تصنيف', 'التصنيف']);
+            document.getElementById('card-s-level').textContent = get(['مستوى المدرسة', 'المستوى']);
+            document.getElementById('card-s-students').textContent = get(['الطلبة', 'عدد الطلبة']);
+            document.getElementById('card-s-sections').textContent = get(['الشعب', 'عدد الشعب']);
+            document.getElementById('card-s-centers').textContent = get(['المراكز', 'عدد المراكز']);
+            document.getElementById('card-s-dev').textContent = get(['تطويرية', 'مرافق تطويرية', 'المرافق']);
+            document.getElementById('card-s-edu').textContent = get(['مشاريع تعليمية', 'تعليمية', 'مشاريع']);
+            document.getElementById('card-s-build').textContent = get(['مشاريع ترميم', 'ترميم', 'بناء']);
+            document.getElementById('card-s-phone').textContent = get(['هاتف', 'الهاتف']);
+            document.getElementById('card-s-mobile').textContent = get(['جوال', 'الجوال']);
+            document.getElementById('card-s-email').textContent = get(['البريد الإلكتروني', 'بريد', 'Email']);
+
+            // توليد رمز الاستجابة السريعة (QR Code)
+            const qrContainer = document.getElementById("qrcode");
+            qrContainer.innerHTML = ""; // تفريغ الرمز القديم
+            const qrText = `المدرسة: ${get(['اسم المدرسة'])}\nالمدير: ${get(['اسم المدير'])}\nهاتف: ${get(['هاتف'])}`;
+            
+            try {
+                new QRCode(qrContainer, {
+                    text: qrText,
+                    width: 60,
+                    height: 60,
+                    colorDark: "#1e3a8a", // لون كحلي
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.L
+                });
+            } catch (e) {
+                console.error("خطأ في توليد QR Code", e);
+            }
+        }
     </script>
 </body>
 </html>
